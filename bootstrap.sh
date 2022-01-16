@@ -61,7 +61,7 @@ pvm_bootstrap() {
   qemu-img create -f raw "$file" "$size" || return
 
   # prepare for cleanup
-  trap 'pvm_cleanup' INT TERM RETURN
+  trap 'pvm_cleanup' INT TERM EXIT
 
   # setup the virtual disk through loopback
   local workdir loopdev
@@ -148,9 +148,6 @@ pvm_bootstrap() {
   linux_cmdline=(
       "console=ttyS0"
       "console=tty0")
-
-  linux_cmdline+=(
-      "xive=off")
 
   # install a boot loader
   case "$arch" in
