@@ -14,3 +14,5 @@ sudo sed -i "s/.*$field=.*/$field=\"$value\"/" \
 
 # update the grup configuration
 _c update-grub || return
+
+sudo cp "$STARTDIR"/scripts/interfaces "$workdir"/etc/network/interfaces
