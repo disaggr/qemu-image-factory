@@ -51,6 +51,7 @@ usage() {
   echo  "  -L LOCALE   Choose a different locale"
   echo  "                default: en_US.UTF-8 UTF-8"
   echo  "  -C SCRIPT   A path to an optional configuration script"
+  echo  "                can be specified multiple times"
   echo  "  -h          Display this help and exit"
 }
 
@@ -187,8 +188,12 @@ pvm_bootstrap() {
   # set a trivial root password
   _c chpasswd <<< "root:pass" || return
 
-  # load customization script
-  [ -z "$script" ] || . "$STARTDIR/$script" || return
+  # load customization scripts
+  if [ "${#script[@]}" -gt 0 ]; then
+    for _s in "${script[@]}"; do
+      . "$STARTDIR/$script" || return
+    done
+  fi
 
   # unmount everything
   pvm_cleanup
@@ -218,7 +223,7 @@ main() {
   local mirror="http://ftp2.de.debian.org/debian/"
   local release="stable"
   local locale="en_US.UTF-8 UTF-8"
-  local script=""
+  local script=()
   local arch="$(_deb_arch "$(uname -m)")"
 
   # parse options
@@ -230,7 +235,7 @@ main() {
       r) release="$OPTARG";;
       L) locale="$OPTARG";;
       A) arch="$OPTARG";;
-      C) script="$OPTARG";;
+      C) script+=("$OPTARG");;
       *) usage >&2; exit "$EXIT_FAILURE";;
     esac
   done

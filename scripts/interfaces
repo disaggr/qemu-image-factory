@@ -1,8 +1,0 @@
-auto lo
-iface lo inet loopback
-
-auto enp0s2
-iface enp0s2 inet static
-    address 172.20.33.11/23
-    gateway 172.20.32.1
-    dns-nameservers 141.89.225.97 141.89.225.123
