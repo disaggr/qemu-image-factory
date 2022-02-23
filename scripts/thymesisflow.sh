@@ -43,5 +43,3 @@ _c sudo -u ansible tee /home/ansible/.ssh/authorized_keys << EOF
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDb2bZmAXhB0qdrLwBMu8UU4yurNZfeHI5Eg11m2Pg/4H/slQlt6pmmGtzaVVmXtHJuCt6l6IQ609MFtZllnt3VRgdviWL0A7gTmi3tdiXi8PVmrM5bJKA2Q2wEw8M1uwW0+wINbQHlJCegPy37up6BoCLZlE2ybwKkBsEiHXQ6eja1cG/YL6V+JIncw/OkE/f1AiVWgojPxThnshnwZertGVqYpwSmBETs6VQLjgNWC2Zu576iJQkgDzaZKRqSZLm90AqC6cuwuI9clI2Z7qHIGT0bQ5ULiVr5k8TNCAsjOYi3nj82u3yO/9XoXf00QbDYvpG2sQEV6w7pIz0Gdo8F feberhardt@vivado-ic922
 EOF
 _c sudo -u ansible chmod 0600 /home/ansible/.ssh/authorized_keys || return
-
-_c bash
