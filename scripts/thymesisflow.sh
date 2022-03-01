@@ -17,6 +17,12 @@ _c tee /etc/network/interfaces << EOF
 auto lo
 iface lo inet loopback
 
+auto enp0s1
+iface enp0s1 inet static
+    address 172.20.33.11/23
+    gateway 172.20.32.1
+    dns-nameservers 141.89.225.97 141.89.225.123
+
 auto enp0s2
 iface enp0s2 inet static
     address 172.20.33.11/23
@@ -30,7 +36,7 @@ _c systemctl enable ssh || return
 
 # create and configure a user for ansible
 _c apt-get install -y sudo || return
-_c useradd -mU ansible -G sudo || return
+_c useradd -mU ansible -G sudo -s /bin/bash || return
 _c chpasswd <<< "ansible:ansible" || return
 _c tee /etc/sudoers.d/00-ansible << EOF
 ansible ALL=(ALL:ALL) NOPASSWD: ALL
