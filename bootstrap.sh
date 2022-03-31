@@ -81,6 +81,11 @@ pvm_bootstrap() {
         set 1 prep on
         mkpart primary ext4 8MiB 100%)
       ;;
+    x86_64)
+      parted_opts+=(
+        mklabel msdos
+        mkpart primary 1MiB 100%)
+      ;;
     *)
       error "%s: unsupported architecture" "$arch"
       return "$EXIT_FAILURE"
@@ -100,6 +105,10 @@ pvm_bootstrap() {
       sudo mkfs.ext4 "$loopdev"p2 || return
       sudo mount "$loopdev"p2 "$workdir" || return
       ;;
+    x86_64)
+      sudo mkfs.ext4 "$loopdev"p1 || return
+      sudo mount "$loopdev"p1 "$workdir" || return
+      ;;
     *)
       error "%s: unsupported architecture" "$arch"
       return "$EXIT_FAILURE"
@@ -110,13 +119,21 @@ pvm_bootstrap() {
   debootstrap_cache="$(pwd)/.cache/debootstrap"
   mkdir -p "$debootstrap_cache"
 
+  deb_arch="$arch"
+  case "$arch" in
+    x86_64) deb_arch=amd64 ;;
+    *)                     ;;
+  esac
+
   debootstrap_opts=(
-      "--arch=$arch"
+      "--arch=$deb_arch"
       "--cache-dir=$debootstrap_cache")
 
   case "$arch" in
     ppc64*)
       debootstrap_opts+=("--include=linux-image-powerpc64le,acpid")
+      ;;
+    x86_64)
       ;;
     *)
       error "%s: unsupported architecture" "$arch"
@@ -163,6 +180,20 @@ pvm_bootstrap() {
 
       # install grub to the VM
       _c grub-install --target=powerpc-ieee1275 "$loopdev"p1 || return
+      _c update-grub || return
+      ;;
+    x86_64)
+      # install required packages
+      _c apt-get install -y grub2 || return
+
+      # enable serial console
+      local field=GRUB_CMDLINE_LINUX_DEFAULT
+      local value="${linux_cmdline[*]}"
+      sudo sed -i "s/.*$field=.*/$field=\"$value\"/" \
+        "$workdir"/etc/default/grub || return
+
+      # install grub to the VM
+      _c grub-install "$loopdev" || return
       _c update-grub || return
       ;;
     *)
