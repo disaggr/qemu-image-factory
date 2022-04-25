@@ -83,8 +83,10 @@ pvm_bootstrap() {
       ;;
     x86_64)
       parted_opts+=(
-        mklabel msdos
-        mkpart primary 1MiB 100%)
+        mklabel gpt
+        mkpart primary 1MiB 2MiB
+        set 1 bios_grub on
+        mkpart primary ext4 2MiB 100%)
       ;;
     *)
       error "%s: unsupported architecture" "$arch"
@@ -101,13 +103,9 @@ pvm_bootstrap() {
   # make file systems and mount partitions
   local swapdev
   case "$arch" in
-    ppc64*)
+    ppc64*|x86_64)
       sudo mkfs.ext4 "$loopdev"p2 || return
       sudo mount "$loopdev"p2 "$workdir" || return
-      ;;
-    x86_64)
-      sudo mkfs.ext4 "$loopdev"p1 || return
-      sudo mount "$loopdev"p1 "$workdir" || return
       ;;
     *)
       error "%s: unsupported architecture" "$arch"
@@ -162,6 +160,19 @@ pvm_bootstrap() {
   # update package mirrors
   _c apt-get update || return
 
+  # install a kernel
+  case "$arch" in
+    ppc64*)
+      ;;
+    x86_64)
+      _c apt-get install -y linux-image-generic || return
+      ;;
+    *)
+      error "%s: unsupported architecture" "$arch"
+      return "$EXIT_FAILURE"
+      ;;
+  esac
+
   linux_cmdline=(
       "console=ttyS0"
       "console=tty0")
@@ -193,7 +204,7 @@ pvm_bootstrap() {
         "$workdir"/etc/default/grub || return
 
       # install grub to the VM
-      _c grub-install "$loopdev" || return
+      _c grub-install --target=i386-pc "$loopdev" || return
       _c update-grub || return
       ;;
     *)

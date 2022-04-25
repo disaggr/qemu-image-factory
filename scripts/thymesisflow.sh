@@ -13,22 +13,21 @@ sudo sed -i "s/.*$field=.*/$field=\"$value\"/" \
 _c update-grub || return
 
 # deploy a network interface configuration
-_c tee /etc/network/interfaces << EOF
-auto lo
-iface lo inet loopback
+_c tee /etc/systemd/network/wired.network << EOF
+[Match]
+Name=e*
 
-auto enp0s1
-iface enp0s1 inet static
-    address 172.20.33.11/23
-    gateway 172.20.32.1
-    dns-nameservers 141.89.225.97 141.89.225.123
+[Network]
+Address=172.20.5.93/24
+Gateway=172.20.5.1
 
-auto enp0s2
-iface enp0s2 inet static
-    address 172.20.33.11/23
-    gateway 172.20.32.1
-    dns-nameservers 141.89.225.97 141.89.225.123
+DNS=141.89.225.97
+DNS=141.89.225.123
 EOF
+_c ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+_c systemctl enable systemd-networkd.service
+_c systemctl enable systemd-resolved.service
+_c systemctl enable systemd-timesyncd.service
 
 # install and enable an ssh server
 _c apt-get install -y openssh-server || return
@@ -56,3 +55,9 @@ _c git clone https://github.com/disaggr/smog.git
 
 _c apt-get install -y build-essential libboost-program-options-dev
 _c make -C smog
+
+# enable a serial tty for use with libvirt console
+sudo systemctl enable serial-getty@ttyS0.service
+
+# install python for ansible
+_c apt-get install -y python
